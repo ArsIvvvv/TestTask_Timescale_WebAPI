@@ -1,0 +1,9 @@
+# Папки сборки .NET
+bin/
+obj/
+
+# Файлы Visual Studio
+.vs/
+*.user
+*.suo
+*.cache
