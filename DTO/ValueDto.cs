@@ -6,7 +6,7 @@ namespace TimeScaleApi.DTO
     {
 
         [Required(ErrorMessage = "Дата не может быть пустым")]
-        public DateTime? Date { get; set; }
+        public string? Date { get; set; }
 
         [Required(ErrorMessage = "Время выполнения не может быть пустым")]
         [Range(0, int.MaxValue, ErrorMessage = "Время выполнение не может быть отрицательным")]

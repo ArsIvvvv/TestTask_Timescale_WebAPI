@@ -7,8 +7,7 @@ namespace TimeScaleApi.Map
     {
         public ValueMap()
         {
-            Map(m => m.Date).Name("Date")
-                .TypeConverterOption.Format("dd-MM-yyyy HH:mm:ss.ffff");
+            Map(m => m.Date).Name("Date");          
             Map(m => m.LeadTime).Name("ExecutionTime");
             Map(m => m.Indicator).Name("Value");
         }

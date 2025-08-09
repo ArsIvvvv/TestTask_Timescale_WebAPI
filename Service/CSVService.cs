@@ -1,5 +1,6 @@
 ﻿using CsvHelper;
 using CsvHelper.Configuration;
+using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
 using System.Linq;
@@ -26,12 +27,14 @@ namespace TimeScaleApi.Service
             {
                 using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
                 {
-
+                    csv.Context.TypeConverterOptionsCache.GetOptions<DateTime>().Formats = new[] { "yyyy-MM-dd HH:mm:ss.ffff" };
                     csv.Context.RegisterClassMap<ValueMap>();
 
                     var allErrors = new List<string>();
 
                     var valueDto = csv.GetRecords<ValueDto>().ToList();
+
+
 
                     if (valueDto.Count == 0 || valueDto.Count > Max)
                         allErrors.Add("Количество превышает 1000 строк или их нету");
@@ -39,22 +42,30 @@ namespace TimeScaleApi.Service
                     foreach (var value in valueDto)
                     {
 
-                        DateTime? minDate = new DateTime(2000, 1, 1);
-                        DateTime? maxDate = DateTime.UtcNow;
+                        bool success = DateTime.TryParseExact(value.Date, "yyyy-MM-dd HH:mm:ss.ffff", CultureInfo.InvariantCulture,
+                                     DateTimeStyles.None, out DateTime parsedDate);
 
-                        if (value.Date.Value < minDate || value.Date.Value > maxDate)
+                        if (!success)
                         {
-                            allErrors.Add($"Дата должна быть между {minDate:d} и {maxDate:d}.");
+                            allErrors.Add($"Неверный формат даты");
                         }
-                        
+                        else
+                        {
+                            DateTime minDate = new DateTime(2000, 1, 1);
+                            DateTime maxDate = DateTime.UtcNow;
+
+                            if (parsedDate < minDate || parsedDate > maxDate)
+                            {
+                                allErrors.Add($"Дата должна быть между {minDate:yyyy-MM-dd} и {maxDate:yyyy-MM-dd}.");
+                            }
+                        }
+
 
                         if (Valid(value, out var errors))
                         {
-
-
                             values.Add(new Value
                             {
-                                Date = DateTime.SpecifyKind(value.Date.Value, DateTimeKind.Utc),
+                                Date = DateTime.SpecifyKind(parsedDate, DateTimeKind.Utc),
                                 LeadTime = value.ExecutionTime.Value,
                                 Indicator = value.Value.Value,
                                 FileName = filename
@@ -66,6 +77,8 @@ namespace TimeScaleApi.Service
                         }
 
                     }
+
+                    allErrors = allErrors.Distinct().ToList(); // убирает повторы
 
                     if (allErrors.Any())
                     {

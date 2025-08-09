@@ -12,7 +12,7 @@ using WebApi_TimeScale.Data;
 namespace TimeScaleApi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250808094151_AddDatabase")]
+    [Migration("20250809133647_AddDatabase")]
     partial class AddDatabase
     {
         /// <inheritdoc />
